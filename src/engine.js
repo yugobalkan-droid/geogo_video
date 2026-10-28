@@ -1016,3 +1016,6 @@ export class GeoGoVideo {
     this.pill('Tara ve oyna', 0, size / 2 + 6 * u, { size: 24 * u });
   }
 }
+
+// viral motoru (src/viral/engine.js) aynı yardımcıları kullanır
+export { clamp, lerp, prog, outCubic, inCubic, inOut, outBack, outElastic, mix, shade, rr, DISPLAY, BODY, NAVY, YELLOW };

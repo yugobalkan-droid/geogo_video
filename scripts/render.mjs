@@ -2,6 +2,7 @@
 // ffmpeg ile H.264 + AAC MP4'e çevirir.
 //   node scripts/render.mjs --preset genel,ogretmen --format 16x9,9x16 --seed 1 --out out
 //   node scripts/render.mjs --preset all --format all
+//   node scripts/render.mjs --viral quiz,story,reveal --theme karisik --seed 1 --count 7   (9:16 viral paket)
 import { spawn } from 'node:child_process';
 import { mkdir, writeFile, rm } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
@@ -21,6 +22,17 @@ const formats = list(args.format, ALL_FORMATS, ['16x9']);
 const seed = Number(args.seed || 1);
 const outDir = resolve(args.out || 'out');
 const quick = args.quick === 'true'; // hızlı test: 10 sn, 15 fps
+const ALL_VIRAL = ['quiz', 'story', 'reveal'];
+const viral = args.viral ? list(args.viral, ALL_VIRAL, ALL_VIRAL) : null;
+const theme = args.theme || 'karisik';
+const count = Math.max(1, Number(args.count || 1));
+
+// her iş: dosya adı + render.html sorgusu
+const jobs = viral
+  ? Array.from({ length: count }, (_, k) => seed + k).flatMap((s) =>
+      viral.map((v) => ({ name: `geogo_viral_${v}_${theme}_s${s}`, query: `viral=${v}&theme=${theme}&seed=${s}` }))
+    )
+  : presets.flatMap((preset) => formats.map((format) => ({ name: `geogo_${preset}_${format}_s${seed}`, query: `preset=${preset}&format=${format}&seed=${seed}` })));
 const FFMPEG = process.env.FFMPEG || 'ffmpeg';
 
 await mkdir(outDir, { recursive: true });
@@ -47,40 +59,41 @@ function ffmpegJob(file, wav, fps) {
 
 const results = [];
 try {
-  for (const preset of presets) {
-    for (const format of formats) {
-      const name = `geogo_${preset}_${format}_s${seed}`;
-      const t0 = Date.now();
-      const page = await browser.newPage();
-      page.on('pageerror', (e) => console.error('[sayfa]', e.message));
-      await page.goto(`${base}?preset=${preset}&format=${format}&seed=${seed}`, { waitUntil: 'networkidle0' });
-      const script = await page.evaluate(() => window.GV.ready);
-      const { DURATION, FPS } = await page.evaluate(() => ({ DURATION: window.GV.DURATION, FPS: window.GV.FPS }));
-      const fps = quick ? 15 : FPS;
-      const dur = quick ? 10 : DURATION;
-      const wavB64 = await page.evaluate(() => window.GV.audio());
-      const wav = join(outDir, `${name}.wav`);
-      await writeFile(wav, Buffer.from(wavB64, 'base64'));
-      const file = join(outDir, `${name}.mp4`);
-      const { ff, done } = ffmpegJob(file, wav, fps);
-      const total = Math.round(dur * fps);
-      for (let f = 0; f < total; f++) {
-        const url = await page.evaluate((t) => window.GV.frame(t), f / fps);
-        const buf = Buffer.from(url.slice(url.indexOf(',') + 1), 'base64');
-        if (!ff.stdin.write(buf)) await new Promise((r) => ff.stdin.once('drain', r));
-        if (f % (fps * 5) === 0) process.stdout.write(`\r${name}: ${Math.round((f / total) * 100)}%   `);
-      }
-      ff.stdin.end();
-      await done;
-      // kapak görseli (montajın ortasından)
-      const thumb = await page.evaluate(() => window.GV.frame(13.2, 0.9));
-      await writeFile(join(outDir, `${name}.jpg`), Buffer.from(thumb.split(',')[1], 'base64'));
-      await rm(wav);
-      await page.close();
-      const sec = ((Date.now() - t0) / 1000).toFixed(0);
-      console.log(`\r✅ ${file} (${sec} sn) — oyunlar: ${script.games.join(', ')}`);
-      results.push({ name, file, games: script.games });
+  for (const { name, query } of jobs) {
+    const t0 = Date.now();
+    const page = await browser.newPage();
+    page.on('pageerror', (e) => console.error('[sayfa]', e.message));
+    await page.goto(`${base}?${query}`, { waitUntil: 'networkidle0' });
+    const script = await page.evaluate(() => window.GV.ready);
+    const { DURATION, FPS } = await page.evaluate(() => ({ DURATION: window.GV.DURATION, FPS: window.GV.FPS }));
+    const fps = quick ? 15 : FPS;
+    const dur = quick ? 10 : DURATION;
+    const wavB64 = await page.evaluate(() => window.GV.audio());
+    const wav = join(outDir, `${name}.wav`);
+    await writeFile(wav, Buffer.from(wavB64, 'base64'));
+    const file = join(outDir, `${name}.mp4`);
+    const { ff, done } = ffmpegJob(file, wav, fps);
+    const total = Math.round(dur * fps);
+    for (let f = 0; f < total; f++) {
+      const url = await page.evaluate((t) => window.GV.frame(t), f / fps);
+      const buf = Buffer.from(url.slice(url.indexOf(',') + 1), 'base64');
+      if (!ff.stdin.write(buf)) await new Promise((r) => ff.stdin.once('drain', r));
+      if (f % (fps * 5) === 0) process.stdout.write(`\r${name}: ${Math.round((f / total) * 100)}%   `);
     }
+    ff.stdin.end();
+    await done;
+    // kapak görseli (reklamda montajın ortası, viralde soru anı)
+    const thumb = await page.evaluate(() => window.GV.frame(window.GV.thumbAt(), 0.9));
+    await writeFile(join(outDir, `${name}.jpg`), Buffer.from(thumb.split(',')[1], 'base64'));
+    // viral: paylaşım paketi (başlık, açıklama, etiketler, anket metinleri)
+    const captions = await page.evaluate(() => window.GV.captions());
+    if (captions) await writeFile(join(outDir, `${name}.md`), captions.md);
+    await rm(wav);
+    await page.close();
+    const sec = ((Date.now() - t0) / 1000).toFixed(0);
+    const what = script.games ? `oyunlar: ${script.games.join(', ')}` : `sorular: ${script.rounds.map((q) => q.id).join(', ')}`;
+    console.log(`\r✅ ${file} (${sec} sn) — ${what}`);
+    results.push(script.games ? { name, file, games: script.games } : { name, file, questions: script.rounds.map((q) => q.id), captions: captions.json });
   }
 } finally {
   await browser.close();

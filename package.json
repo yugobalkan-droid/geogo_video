@@ -2,13 +2,15 @@
   "name": "geogo_video",
   "version": "1.0.0",
   "private": true,
-  "description": "geogames.site için 60 saniyelik reklam videosu otomasyonu",
+  "description": "geogames.site için reklam ve viral quiz/story videosu otomasyonu",
   "type": "module",
   "scripts": {
     "dev": "node scripts/serve.mjs",
     "render": "node scripts/render.mjs --preset genel --format 16x9",
     "render:all": "node scripts/render.mjs --preset all --format 16x9,9x16",
-    "render:quick": "node scripts/render.mjs --preset genel --format 16x9 --quick"
+    "render:quick": "node scripts/render.mjs --preset genel --format 16x9 --quick",
+    "viral": "node scripts/render.mjs --viral quiz,story,reveal --seed 1",
+    "viral:week": "node scripts/render.mjs --viral quiz,story,reveal --seed 1 --count 7"
   },
   "devDependencies": {
     "puppeteer": "^24.0.0"
