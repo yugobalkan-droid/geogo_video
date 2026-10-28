@@ -175,7 +175,7 @@ export async function renderSoundtrackWav(sampleRate = 48000) {
   return encodeWav(buf);
 }
 
-function encodeWav(buf) {
+export function encodeWav(buf) {
   const ch = buf.numberOfChannels, len = buf.length, sr = buf.sampleRate;
   const out = new DataView(new ArrayBuffer(44 + len * ch * 2));
   const w = (o, s) => [...s].forEach((c, i) => out.setUint8(o + i, c.charCodeAt(0)));

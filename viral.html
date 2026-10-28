@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GeoGo Viral Stüdyo</title>
+<meta name="description" content="geogames.site için viral quiz Short'ları ve anketli story'ler üreten stüdyo.">
+<link rel="icon" href="assets/mascot/geogo4.webp">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@600;700;800&family=Noto+Color+Emoji&display=block" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b1430; --panel: #13204a; --line: #24356e; --text: #eef2ff; --muted: #9fb0e0;
+    --yellow: #fde047; --pink: #f472b6; --green: #4ade80; --navy: #0f1b3d;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: radial-gradient(1200px 600px at 20% -10%, #5b1b6b 0%, var(--bg) 60%); background-color: var(--bg); color: var(--text); font-family: 'Nunito', system-ui, sans-serif; min-height: 100vh; }
+  header { display: flex; align-items: center; gap: 14px; padding: 18px 24px; max-width: 1400px; margin: 0 auto; flex-wrap: wrap; }
+  header img { width: 56px; height: 56px; object-fit: contain; }
+  header h1 { font-family: 'Baloo 2', sans-serif; font-size: 30px; margin: 0; line-height: 1; }
+  header h1 span { color: var(--pink); }
+  header p { margin: 4px 0 0; color: var(--muted); font-weight: 700; font-size: 14px; }
+  header nav { margin-left: auto; display: flex; gap: 8px; }
+  header nav a { color: var(--navy); background: var(--yellow); padding: 10px 16px; border-radius: 999px; font-weight: 800; text-decoration: none; white-space: nowrap; }
+  header nav a.ghost { background: #24356e; color: var(--text); }
+  main { display: grid; grid-template-columns: minmax(0, 440px) minmax(0, 1fr); gap: 20px; padding: 0 24px 40px; max-width: 1400px; margin: 0 auto; }
+  @media (max-width: 900px) { main { grid-template-columns: 1fr; padding: 0 16px 32px; } header { padding: 16px; } header nav { margin-left: 0; } }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 20px; padding: 16px; }
+  .card h2 { font-family: 'Baloo 2', sans-serif; font-size: 20px; margin: 0 0 10px; }
+  .screen { display: flex; justify-content: center; background: #050a1c; border-radius: 12px; overflow: hidden; height: min(72vh, 760px); }
+  .screen canvas { height: 100%; max-width: 100%; display: block; object-fit: contain; }
+  .transport { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+  .transport input { flex: 1; accent-color: var(--pink); }
+  .time { font-variant-numeric: tabular-nums; font-weight: 800; min-width: 80px; text-align: right; }
+  button, .btn { font: inherit; font-weight: 800; border: 0; border-radius: 12px; padding: 12px 16px; cursor: pointer; background: #24356e; color: var(--text); text-decoration: none; display: inline-flex; align-items: center; gap: 8px; justify-content: center; }
+  button:hover { filter: brightness(1.15); }
+  button.primary { background: var(--yellow); color: var(--navy); }
+  button.pink { background: var(--pink); color: var(--navy); }
+  button.small { padding: 6px 10px; font-size: 13px; border-radius: 8px; }
+  button:disabled { opacity: .5; cursor: progress; }
+  .side { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+  label { display: block; font-size: 13px; color: var(--muted); font-weight: 800; margin: 10px 0 6px; }
+  select, input[type=number] { width: 100%; font: inherit; font-weight: 700; background: #0b1430; color: var(--text); border: 1px solid var(--line); border-radius: 10px; padding: 10px; }
+  .row { display: flex; gap: 8px; }
+  .row > * { flex: 1; min-width: 0; }
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tabs button { flex: 1; min-width: 120px; }
+  .tabs button[aria-pressed=true] { background: var(--pink); color: var(--navy); }
+  .hint { font-size: 13px; color: var(--muted); line-height: 1.5; }
+  .progress { height: 8px; background: #0b1430; border-radius: 99px; overflow: hidden; margin-top: 8px; display: none; }
+  .progress i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--yellow), var(--pink)); }
+  .out a { color: var(--yellow); font-weight: 800; }
+  .rounds { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .rounds li { background: #0b1430; border-radius: 12px; padding: 10px 12px; border-left: 5px solid var(--c); cursor: pointer; }
+  .rounds li b { font-family: 'Baloo 2', sans-serif; font-size: 16px; }
+  .rounds li small { display: block; color: var(--muted); font-weight: 700; }
+  .cap { position: relative; background: #0b1430; border: 1px solid var(--line); border-radius: 12px; padding: 12px; margin-top: 8px; }
+  .cap h3 { margin: 0 0 6px; font-size: 14px; color: var(--yellow); }
+  .cap pre { margin: 0; white-space: pre-wrap; word-break: break-word; font: 700 13px/1.5 'Nunito', sans-serif; color: var(--text); }
+  .cap button { position: absolute; top: 8px; right: 8px; }
+  .tips li { margin-bottom: 6px; }
+  code { background: #0b1430; padding: 1px 6px; border-radius: 6px; }
+</style>
+</head>
+<body>
+<header>
+  <img src="assets/mascot/geogo4.webp" alt="">
+  <div>
+    <h1>GeoGo <span>Viral</span> Stüdyo</h1>
+    <p>Quiz Short'ları ve anketli story'ler — 9:16, telifsiz müzik, hazır paylaşım metinleri.</p>
+  </div>
+  <nav>
+    <a class="ghost" href="./">← Reklam stüdyosu</a>
+    <a href="https://geogames.site" target="_blank" rel="noopener">geogames.site ↗</a>
+  </nav>
+</header>
+
+<main>
+  <section class="card">
+    <div class="screen"><canvas id="cv"></canvas></div>
+    <div class="transport">
+      <button id="play" class="primary" aria-label="Oynat">▶</button>
+      <input id="scrub" type="range" min="0" max="10" step="0.01" value="0" aria-label="Zaman">
+      <div class="time" id="time">0:00</div>
+    </div>
+  </section>
+
+  <div class="side">
+    <div class="card">
+      <h2>Ne üretelim?</h2>
+      <div class="tabs" id="formats"></div>
+      <div class="row">
+        <div><label for="theme">Tema</label><select id="theme"></select></div>
+        <div><label for="seed">Seed</label><input id="seed" type="number" min="1" value="1"></div>
+        <div style="flex:none;align-self:flex-end"><button id="dice" title="Yeni varyasyon">🎲</button></div>
+      </div>
+      <div id="qwrap">
+        <label for="question">Soru (story / cevap çifti aynı soruyu kullanır)</label>
+        <select id="question"></select>
+      </div>
+      <div class="row" style="margin-top:14px">
+        <button id="record" class="pink">⏺ Kaydet ve indir</button>
+        <button id="dlmd">⬇ Paylaşım paketi (.md)</button>
+      </div>
+      <div class="progress" id="prog"><i></i></div>
+      <p class="hint out" id="out">Kayıt gerçek zamanlı yapılır. Toplu 1080p MP4 için: <code>npm run viral:week</code></p>
+    </div>
+
+    <div class="card">
+      <h2>🎬 Akış</h2>
+      <ol class="rounds" id="rounds"></ol>
+    </div>
+
+    <div class="card">
+      <h2>📣 Paylaşım paketi</h2>
+      <div id="caps"></div>
+    </div>
+
+    <div class="card">
+      <h2>🔥 Neden viral olur?</h2>
+      <ul class="hint tips">
+        <li><b>İlk 2 saniyede kanca:</b> “Sadece %1’i bilebiliyor” gibi meydan okuma izleyiciyi tutar.</li>
+        <li><b>Oyna-birlikte formatı:</b> 3 saniyelik geri sayım izleyiciyi cevap vermeye zorlar, izlenme süresini artırır.</li>
+        <li><b>Seviye seviye zorlaşma:</b> “son soru çok zor” merakı videoyu sonuna kadar izletir.</li>
+        <li><b>Yorum tetikleyici:</b> “Kaç tane bildin?” + sabit yorumda cevaplar → yorum ve tekrar izleme.</li>
+        <li><b>Anketli story:</b> tek dokunuşla oy vermek etkileşimi artırır; cevap ertesi hikâyede verilince takipçi geri gelir.</li>
+        <li><b>Şaşırtan gerçek:</b> “Konya, Belçika’dan büyük” gibi harita yanılgıları (r/MapPorn klasikleri) paylaşılır.</li>
+      </ul>
+    </div>
+  </div>
+</main>
+
+<script type="module">
+import { ViralVideo } from './src/viral/engine.js';
+import { scheduleViral } from './src/viral/audio.js';
+import { VIRAL_FORMATS, buildCaptions, captionsMarkdown } from './src/viral/script.js';
+import { BANK, THEMES } from './src/viral/bank.js';
+
+const $ = (id) => document.getElementById(id);
+const cv = $('cv');
+const video = new ViralVideo(cv);
+let t = 0, playing = null, recording = false, format = 'quiz';
+const TYPE_NAMES = { flag: 'Bayrak', plate: 'Plaka', emoji: 'Emoji', vs: 'Hangisi büyük', tf: 'Doğru/Yanlış', text: 'Soru' };
+const COLORS = { flag: '#dc2626', plate: '#2563eb', emoji: '#db2777', vs: '#0d9488', tf: '#7c3aed', text: '#ea580c' };
+
+for (const [k, f] of Object.entries(VIRAL_FORMATS)) {
+  const b = document.createElement('button');
+  b.textContent = f.label;
+  b.dataset.f = k;
+  b.onclick = () => { format = k; reload(); };
+  $('formats').append(b);
+}
+for (const [k, th] of Object.entries(THEMES)) $('theme').add(new Option(th.label, k));
+function fillQuestions() {
+  const types = THEMES[$('theme').value].types;
+  const cur = $('question').value;
+  $('question').innerHTML = '';
+  $('question').add(new Option('🎲 Seed’e göre seç', ''));
+  BANK.filter((q) => !types || types.includes(q.type)).forEach((q) => $('question').add(new Option(`[${TYPE_NAMES[q.type]}] ${q.q} → ${q.options[q.answer]}`, q.id)));
+  if ([...$('question').options].some((o) => o.value === cur)) $('question').value = cur;
+}
+
+const q = new URLSearchParams(location.search);
+if (q.get('f') in VIRAL_FORMATS) format = q.get('f');
+if (q.get('theme') in THEMES) $('theme').value = q.get('theme');
+if (q.get('seed')) $('seed').value = q.get('seed');
+fillQuestions();
+if (q.get('q')) $('question').value = q.get('q');
+
+async function reload() {
+  stop();
+  [...$('formats').children].forEach((b) => b.setAttribute('aria-pressed', b.dataset.f === format));
+  $('qwrap').style.display = format === 'quiz' ? 'none' : '';
+  const opts = { format, theme: $('theme').value, seed: Number($('seed').value) || 1, question: format === 'quiz' ? null : $('question').value || null };
+  const qs = new URLSearchParams({ f: format, theme: opts.theme, seed: opts.seed, ...(opts.question ? { q: opts.question } : {}) });
+  history.replaceState(null, '', '?' + qs);
+  await video.load(opts);
+  $('scrub').max = video.duration;
+  t = Math.min(t, video.duration - 0.01);
+  renderRounds();
+  renderCaptions();
+  draw(video.script.thumbAt);
+}
+
+function renderRounds() {
+  const s = video.script;
+  const items = [];
+  if (s.format === 'quiz') items.push({ at: 0.5, c: '#f472b6', b: 'Kanca (0–2,5 sn)', d: `${s.hook.top} ${s.hook.big}` });
+  s.rounds.forEach((r, i) => items.push({
+    at: s.format === 'quiz' ? 2.5 + i * 6 + 1.5 : 2,
+    c: COLORS[r.type],
+    b: s.format === 'quiz' ? `Seviye ${i + 1} • ${TYPE_NAMES[r.type]}` : `${TYPE_NAMES[r.type]} sorusu`,
+    d: `${r.q} → ${r.options[r.answer]}`,
+  }));
+  if (s.format === 'quiz') items.push({ at: s.duration - 3, c: '#fde047', b: 'Çağrı', d: 'Kaç tane bildin? → geogames.site' });
+  $('rounds').innerHTML = items.map((it) => `<li style="--c:${it.c}" data-at="${it.at}"><b>${esc(it.b)}</b><small>${esc(it.d)}</small></li>`).join('');
+}
+$('rounds').addEventListener('click', (e) => {
+  const li = e.target.closest('li');
+  if (li) seek(Number(li.dataset.at));
+});
+
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+function renderCaptions() {
+  const c = buildCaptions(video.script);
+  const blocks = [];
+  if (c.youtube) {
+    blocks.push(['YouTube Shorts başlığı', c.youtube.title], ['YouTube açıklaması', c.youtube.description], ['Sabit yorum (cevaplar)', c.youtube.pinnedComment], ['TikTok', c.tiktok.caption], ['Instagram Reels', c.instagram.caption]);
+    blocks.push(['Story’de paylaşırken anket', `${c.story.poll.question}\n• ${c.story.poll.options.join('\n• ')}`]);
+  } else {
+    blocks.push(['Nasıl paylaşılır?', `${c.story.tip}\n\n${c.story.schedule}`]);
+    blocks.push(['Anket çıkartması', `${c.story.poll.question}\n• ${c.story.poll.options.join('\n• ')}`]);
+    if (c.story.quiz) blocks.push(['Quiz çıkartması doğru şık', c.story.quiz.correct]);
+    blocks.push(['Cevap hikâyesi metni', c.story.reveal], ['Bağlantı çıkartması', c.story.link.url]);
+  }
+  $('caps').innerHTML = blocks.map(([h, txt], i) => `<div class="cap"><h3>${esc(h)}</h3><pre id="cap${i}">${esc(txt)}</pre><button class="small" data-i="${i}">Kopyala</button></div>`).join('');
+}
+$('caps').addEventListener('click', async (e) => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  try {
+    await navigator.clipboard.writeText($('cap' + b.dataset.i).textContent);
+    b.textContent = '✓ Kopyalandı';
+  } catch {
+    b.textContent = 'Seçip kopyalayın';
+  }
+  setTimeout(() => (b.textContent = 'Kopyala'), 1500);
+});
+
+const fileBase = () => `geogo_viral_${format}_${$('theme').value}_s${$('seed').value}`;
+$('dlmd').onclick = () => {
+  const blob = new Blob([captionsMarkdown(video.script)], { type: 'text/markdown' });
+  Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: fileBase() + '.md' }).click();
+};
+
+const fmt = (x) => `${Math.floor(x / 60)}:${String(Math.floor(x % 60)).padStart(2, '0')}`;
+function draw(x) {
+  t = x;
+  video.draw(x);
+  $('scrub').value = x;
+  $('time').textContent = `${fmt(x)} / ${fmt(video.duration)}`;
+}
+function seek(x) {
+  const was = !!playing;
+  stop();
+  draw(x);
+  if (was) play();
+}
+function play(extraDest) {
+  const D = video.duration;
+  if (t >= D - 0.05) t = 0;
+  const ac = new AudioContext();
+  const out = ac.createGain();
+  out.connect(ac.destination);
+  if (extraDest) extraDest(ac, out);
+  const start = ac.currentTime + 0.15, offset = t;
+  scheduleViral(ac, out, video.script, start, offset);
+  const p = { ac, raf: 0 };
+  p.finished = new Promise((r) => (p.done = r));
+  const tick = () => {
+    const now = offset + Math.max(0, ac.currentTime - start);
+    if (now >= D) { draw(D - 0.001); stop(); return; }
+    draw(now);
+    p.raf = requestAnimationFrame(tick);
+  };
+  p.raf = requestAnimationFrame(tick);
+  playing = p;
+  $('play').textContent = '⏸';
+  return p;
+}
+function stop() {
+  if (!playing) return;
+  cancelAnimationFrame(playing.raf);
+  playing.ac.close();
+  playing.done();
+  playing = null;
+  $('play').textContent = '▶';
+}
+
+$('play').onclick = () => (playing ? stop() : play());
+$('scrub').oninput = (e) => seek(Number(e.target.value));
+$('theme').onchange = () => { fillQuestions(); reload(); };
+$('seed').onchange = $('question').onchange = reload;
+$('dice').onclick = () => { $('seed').value = 1 + Math.floor(Math.random() * 9999); $('question').value = ''; reload(); };
+
+$('record').onclick = async () => {
+  if (recording) return;
+  recording = true;
+  $('record').disabled = true;
+  stop();
+  t = 0;
+  const mime = ['video/mp4;codecs=avc1,mp4a.40.2', 'video/mp4', 'video/webm;codecs=vp9,opus', 'video/webm'].find((m) => MediaRecorder.isTypeSupported(m));
+  const vstream = cv.captureStream(30);
+  let rec;
+  const chunks = [];
+  const p = play((ac, out) => {
+    const dest = ac.createMediaStreamDestination();
+    out.connect(dest);
+    rec = new MediaRecorder(new MediaStream([...vstream.getVideoTracks(), ...dest.stream.getAudioTracks()]), { mimeType: mime, videoBitsPerSecond: 10_000_000 });
+    rec.ondataavailable = (e) => e.data.size && chunks.push(e.data);
+    rec.start(1000);
+  });
+  $('prog').style.display = 'block';
+  const iv = setInterval(() => ($('prog').firstElementChild.style.width = `${(t / video.duration) * 100}%`), 200);
+  await p.finished;
+  clearInterval(iv);
+  await new Promise((r) => { rec.onstop = r; rec.stop(); });
+  const blob = new Blob(chunks, { type: mime });
+  const name = `${fileBase()}.${mime.startsWith('video/mp4') ? 'mp4' : 'webm'}`;
+  const url = URL.createObjectURL(blob);
+  Object.assign(document.createElement('a'), { href: url, download: name }).click();
+  $('out').innerHTML = `✅ Hazır: <a href="${url}" download="${name}">${name}</a> (${(blob.size / 1e6).toFixed(1)} MB)`;
+  $('prog').style.display = 'none';
+  $('record').disabled = false;
+  recording = false;
+};
+
+await reload();
+</script>
+</body>
+</html>
